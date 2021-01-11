@@ -1,78 +1,33 @@
 const { response } = require('express');
-//const { validationResult } = require('express-validator');
-const bcrypt = require('bcryptjs');
-const User = require('../models/user');
-const { generateJWT } = require('../helpers/jwt');
+const Doctor = require('../models/doctor');
 
-/* const getUsers = async(req, res) => {
-    //const users = await User.find({}, 'name email role google');
-    const users = await User.find();
+const getDoctors = async(req, res) => {
+    const doctors = await Doctor.find()
+                                .populate('user', 'name email img')
+                                .populate('hospital', 'name');
 
     res.json({
         ok: true,
-        users
-    })
-}; */
-
-const getUsers = async(req, res) => {
-    const from = Number( req.query.from ) || 0;
-    /* const users = await User.find()
-                        .skip( from )
-                        .limit( 5 );
-    
-    const total = await User.count(); */
-
-    // se ejecuntan de manera simultanea mejor rendimiento, se utiliza desustructuracion de arreglos
-    const [users, total] = await Promise.all([
-        User.find().skip( from ).limit( 5 ),
-        User.countDocuments()
-    ]);
-
-    res.json({
-        ok: true,
-        users,
-        total
+        doctors
     })
 };
 
-const createUser = async(req, res = response) => {
-    const { email, password } = req.body;
+const createDoctor = async(req, res = response) => {
+    const uid = req.uid;
+    const doctor = new Doctor({
+        user: uid,
+        ...req.body
+    });
 
-    /* const errors = validationResult( req );  se pasa a validate-fields.js
-    if (!errors.isEmpty()) {
-        return res.status(400).json({
-            ok: false,
-            errors: errors.mapped()
-        });
-    } */
-
-    try {
-        const existEmail = await User.findOne({ email });
-
-        if (existEmail) {
-            return res.status(400).json({
-                ok: false,
-                msg: 'El correo ya se encuentra registrado.'
-            });
-        }
-
-        const user = new User( req.body );
-
-        // Encryptar contraseña
-        const salt = bcrypt.genSaltSync();
-        user.password = bcrypt.hashSync( password, salt );
-
-        // guardar usuario
-        await user.save();
-
-        // Generar token 
-        const token = await generateJWT( user.id );
+    try {        
+        // guardar Medico
+        const doctorCreate = await doctor.save();
 
         res.json({
             ok: true,
-            user: user,
-            token
-        });        
+            doctor: doctorCreate
+        });  
+
     } catch (error) {
         console.log('Error... ', error)
         res.status(500).json({
@@ -82,8 +37,7 @@ const createUser = async(req, res = response) => {
     }
 };
 
-const updateUser = async (req, res = response) => {
-    //TODO: validar token y comprobar si es el usuario correcto.
+const updateDoctor = async (req, res = response) => {
     const uid = req.params.id;
 
     try {
@@ -130,7 +84,7 @@ const updateUser = async (req, res = response) => {
     }
 };
 
-const deleteUser = async (req, res = response) => {
+const deleteDoctor = async (req, res = response) => {
     const uid = req.params.id;
 
     try {
@@ -160,8 +114,8 @@ const deleteUser = async (req, res = response) => {
 };
 
 module.exports = {
-    getUsers,
-    createUser,
-    updateUser,
-    deleteUser
+    getDoctors,
+    createDoctor,
+    updateDoctor,
+    deleteDoctor
 }
