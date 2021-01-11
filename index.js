@@ -18,6 +18,9 @@ app.use( express.json() );
 // Coneción Db
 conectionDB();
 
+// Directorio público
+app.use( express.static('public') );
+
 // Rutas 
 app.use( '/api/users', require('./routes/users') );
 app.use( '/api/hospitals', require('./routes/hospitals') );

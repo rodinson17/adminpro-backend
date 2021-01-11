@@ -2,6 +2,7 @@ const { response } = require('express');
 const User = require('../models/user');
 const bcrypt = require('bcryptjs');
 const { generateJWT } = require('../helpers/jwt');
+const { googleVerify } = require('../helpers/google-verify');
 
 const login = async (req, res = response) => {
     const { email, password } = req.body;
@@ -28,7 +29,7 @@ const login = async (req, res = response) => {
             });
         }
 
-        // Generar token 
+        // Generar token - JWT
         const token = await generateJWT( userDB.id );
 
         res.json({
@@ -45,6 +46,51 @@ const login = async (req, res = response) => {
     }
 };
 
+const googleSingIn = async ( req, res = response ) => {
+    const googleToken = req.body.token;
+
+    try {
+        const { name, email, picture } = await googleVerify( googleToken );
+        let user;
+
+        // Verificar que no exista el usuario
+        const userDB = await User.findOne({ email });
+        if (userDB) {
+            user = userDB;
+            user.google = true;
+        } else {
+            user = new User({
+                name,
+                email,
+                password: '123',
+                img: '',
+                google: true
+            });
+        }
+
+        // Guardar en la base de datos
+        await user.save();
+
+        // Generar token - JWT
+        const token = await generateJWT( user.id );
+
+        res.json({
+            ok: true,
+            token
+        });
+        
+    } catch (error) {
+        console.log('Error: ', error);
+        res.status(401).json({
+            ok: false,
+            msg: 'Algo salio mal con Google Token'
+        });
+    }
+
+    
+}
+
 module.exports = {
-    login
+    login,
+    googleSingIn
 }
