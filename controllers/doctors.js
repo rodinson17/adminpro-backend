@@ -32,83 +32,71 @@ const createDoctor = async(req, res = response) => {
         console.log('Error... ', error)
         res.status(500).json({
             ok: false,
-            msg: 'Error inesperado... revisar logs'
+            msg: 'Comuníquese con el administrador.'
         });
     }
 };
 
 const updateDoctor = async (req, res = response) => {
-    const uid = req.params.id;
+    const id = req.params.id;
+    const uid = req.uid;
 
     try {
-        const userDB = await User.findById( uid );
+        const doctorDB = await Doctor.findById( id );
 
-        if (!userDB) {
+        if (!doctorDB) {
             return res.status(404).json({
                 ok: false,
-                msg: 'No existe un usuario con ese id'
+                msg: 'No existe un Doctor con ese id'
             });
         }
 
-        // Actualizar usuario
-        const { password, google, email, ...fields} = req.body; // optimizacion de codigo
-        /* delete fields.password; // borrar información que no se necesita.
-        delete fields.google; */
-        /* if (userDB.email === email) { optimización
-            delete fields.email;
-        } else { */
-        if (userDB.email !== email) {
-            const existEmail = await User.findOne({ email });
-
-            if (existEmail) {
-                return res.status(400).json({
-                    ok: false,
-                    msg: 'Ya existe un usuario registrado con ese email.'
-                });
-            }
-        }
-
-        fields.email = email;
-        const userUpdate = await User.findByIdAndUpdate( uid, fields, { new: true } );
+        // Actualizar Doctor
+        const changesDoctor = {
+            user: uid,
+            ...req.body
+        };        
+        const doctorUpdate = await Doctor.findByIdAndUpdate( id, changesDoctor, { new: true } );
 
         res.json({
             ok: true,
-            user: userUpdate
+            doctor: doctorUpdate
         });
+
     } catch (error) {
         console.log('Error... ', error)
         res.status(500).json({
             ok: false,
-            msg: 'Error inesperado... revisar logs'
+            msg: 'Comuníquese con el administrador.'
         });
     }
 };
 
 const deleteDoctor = async (req, res = response) => {
-    const uid = req.params.id;
+    const id = req.params.id;
 
     try {
-        const userDB = await User.findById( uid );
+        const doctorDB = await Doctor.findById( id );
 
-        if (!userDB) {
+        if (!doctorDB) {
             return res.status(404).json({
                 ok: false,
-                msg: 'No existe un usuario con ese id'
+                msg: 'No existe un Doctor con ese id'
             });
         }
 
-        await User.findByIdAndDelete( uid );
+        await Doctor.findByIdAndDelete( id );
 
         res.json({
             ok: true,
-            msg: 'Usario eliminado.' 
+            msg: 'Doctor eliminado.' 
         });
 
     } catch (error) {
         console.log('Error... ', error)
         res.status(500).json({
             ok: false,
-            msg: 'Error inesperado... revisar logs'
+            msg: 'Comuníquese con el administrador.'
         });
     }
 };

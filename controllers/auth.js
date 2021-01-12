@@ -85,12 +85,23 @@ const googleSingIn = async ( req, res = response ) => {
             ok: false,
             msg: 'Algo salio mal con Google Token'
         });
-    }
-
-    
+    }    
 }
+
+const refreshToken = async ( req, res = response ) => {
+    const uid = req.uid;
+
+    // Generar token - JWT
+    const token = await generateJWT( uid );    
+
+    res.json({
+        ok: true,
+        token
+    });
+};
 
 module.exports = {
     login,
-    googleSingIn
+    googleSingIn,
+    refreshToken
 }
