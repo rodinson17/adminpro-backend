@@ -114,7 +114,7 @@ const updateUser = async (req, res = response) => {
             }
         }
 
-        fields.email = email;
+        if ( !userDB.google ) fields.email = email;
         const userUpdate = await User.findByIdAndUpdate( uid, fields, { new: true } );
 
         res.json({

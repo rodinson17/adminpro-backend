@@ -5,7 +5,7 @@ const { Router } = require('express');
 const { check } = require('express-validator'); 
 const { validateFields } = require('../middlewares/validate-fields');
 const { validateJWT } = require('../middlewares/validate-jwt');
-const { getDoctors, createDoctor, updateDoctor, deleteDoctor } = require('../controllers/doctors');
+const { getDoctors, createDoctor, updateDoctor, deleteDoctor, getDoctorsById } = require('../controllers/doctors');
 
 const router = Router();
 
@@ -32,5 +32,7 @@ router.put( '/:id',
 );
 
 router.delete( '/:id', validateJWT, deleteDoctor );
+
+router.get( '/:id', validateJWT, getDoctorsById );
 
 module.exports = router;
